@@ -1,0 +1,18 @@
+services:
+  daikin-web:
+    image: ghcr.io/alanlin314/daikin:latest
+    build: .
+    container_name: daikin-web
+    restart: unless-stopped
+    ports:
+      - "3080:3080"
+    environment:
+      # 也可改用下面 DAIKIN_DEVICES 一次設定多台
+      DAIKIN_IP: ${DAIKIN_IP:-192.168.1.100}
+      DAIKIN_NAME: ${DAIKIN_NAME:-冷氣}
+      PORT: "3080"
+      HOST: "0.0.0.0"
+    # 若想用完整設定檔，取消註解並準備 config.json：
+    # volumes:
+    #   - ./config.json:/app/config.json:ro
+    # 建議使用 host 網路以外的 bridge（預設即可），只要路由器能連到冷氣 IP

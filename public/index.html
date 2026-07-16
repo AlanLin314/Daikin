@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#eef3f8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>大金冷氣</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="app" data-mode="off">
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <header class="header">
+      <div class="header-text">
+        <p class="eyebrow">Daikin · 區域網路</p>
+        <h1>冷氣控制</h1>
+        <p id="subtitle" class="subtitle">正在連線…</p>
+      </div>
+      <button id="btn-refresh" class="icon-btn" type="button" title="重新整理" aria-label="重新整理">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+    </header>
+
+    <div id="toast" class="toast hidden" role="status"></div>
+    <div id="error-banner" class="error-banner hidden" role="alert"></div>
+
+    <section id="device-tabs" class="device-tabs hidden" aria-label="裝置列表"></section>
+
+    <main id="panel" class="panel hidden">
+      <!-- 主狀態卡 -->
+      <section class="card hero">
+        <div class="hero-top">
+          <div class="hero-identity">
+            <div class="status-row">
+              <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+              <span id="status-text" class="status-text">離線</span>
+            </div>
+            <div id="device-title" class="device-title">—</div>
+            <div id="device-meta" class="device-meta">—</div>
+          </div>
+          <button id="btn-power" class="power-btn" type="button" aria-pressed="false" aria-label="電源">
+            <span class="power-ring">
+              <svg class="power-svg" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2v10"></path>
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              </svg>
+            </span>
+            <span id="power-label" class="power-label">離線</span>
+          </button>
+        </div>
+
+        <div class="readings">
+          <div class="reading">
+            <span class="reading-icon" aria-hidden="true">⌂</span>
+            <span class="reading-label">室內</span>
+            <div class="reading-main">
+              <span id="indoor-temp" class="reading-value">—</span>
+              <span class="reading-unit">°C</span>
+            </div>
+          </div>
+          <div class="reading">
+            <span class="reading-icon" aria-hidden="true">💧</span>
+            <span class="reading-label">濕度</span>
+            <div class="reading-main">
+              <span id="indoor-humidity" class="reading-value">—</span>
+              <span class="reading-unit">%</span>
+            </div>
+          </div>
+          <div class="reading">
+            <span class="reading-icon" aria-hidden="true">🌤</span>
+            <span class="reading-label">室外</span>
+            <div class="reading-main">
+              <span id="outdoor-temp" class="reading-value">—</span>
+              <span class="reading-unit">°C</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 設定溫度 -->
+      <section class="card temp-card">
+        <div class="card-head">
+          <div class="card-title">設定溫度</div>
+          <div id="temp-range" class="card-badge"></div>
+        </div>
+        <div class="temp-control">
+          <button id="btn-temp-down" class="temp-btn" type="button" aria-label="降低溫度">−</button>
+          <div class="temp-display">
+            <label class="temp-input-wrap" for="target-temp-input">
+              <input
+                id="target-temp-input"
+                class="temp-value-input"
+                type="number"
+                inputmode="decimal"
+                step="0.5"
+                min="10"
+                max="32"
+                placeholder="—"
+                aria-label="設定溫度"
+              />
+              <span class="temp-unit">°C</span>
+            </label>
+            <div class="temp-edit-hint">點擊數字可直接輸入</div>
+          </div>
+          <button id="btn-temp-up" class="temp-btn" type="button" aria-label="提高溫度">+</button>
+        </div>
+        <p id="temp-hint" class="hint">送風／除濕／加濕模式無法設定溫度</p>
+      </section>
+
+      <!-- 運轉模式 -->
+      <section class="card mode-card">
+        <div class="card-head">
+          <div class="card-title">運轉模式</div>
+          <div id="mode-current" class="card-badge">—</div>
+        </div>
+        <div id="mode-primary" class="mode-primary" role="group" aria-label="主要模式"></div>
+        <div id="mode-secondary" class="mode-secondary" role="group" aria-label="其他模式"></div>
+      </section>
+
+      <!-- 風量 -->
+      <section class="card fan-card">
+        <div class="card-head">
+          <div class="card-title">風量</div>
+          <div id="fan-current" class="card-badge">—</div>
+        </div>
+        <div class="fan-controls" role="group" aria-label="風量">
+          <button id="btn-fan-auto" class="fan-auto-btn" type="button" aria-pressed="false">
+            <span class="fan-auto-icon" aria-hidden="true">A</span>
+            <span>自動</span>
+          </button>
+          <div class="fan-slider-wrap">
+            <input
+              id="fan-slider"
+              class="fan-slider"
+              type="range"
+              min="0"
+              max="5"
+              step="1"
+              value="2"
+              aria-label="風量滑桿"
+            />
+            <div class="fan-ticks" aria-hidden="true">
+              <span>靜音</span>
+              <span>1</span>
+              <span>2</span>
+              <span>3</span>
+              <span>4</span>
+              <span>5</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 其他功能 -->
+      <section class="card">
+        <div class="card-title">其他功能</div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">人體感應</div>
+            <div class="toggle-desc">有人時才加強空調（依機種支援）</div>
+          </div>
+          <label class="switch">
+            <input id="toggle-motion" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Wi‑Fi SSID 顯示</div>
+            <div class="toggle-desc">控制模組是否顯示／廣播 SSID</div>
+          </div>
+          <div class="btn-pair">
+            <button id="btn-ssid-show" class="mini-btn" type="button">顯示</button>
+            <button id="btn-ssid-hide" class="mini-btn" type="button">隱藏</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 裝置資訊 -->
+      <details class="card details-card">
+        <summary class="details-summary">
+          <span class="card-title">裝置資訊</span>
+          <span class="details-chevron" aria-hidden="true">▾</span>
+        </summary>
+        <dl id="info-list" class="info-list">
+          <div><dt>IP</dt><dd id="info-ip">—</dd></div>
+          <div><dt>MAC</dt><dd id="info-mac">—</dd></div>
+          <div><dt>SSID</dt><dd id="info-ssid">—</dd></div>
+          <div><dt>型號</dt><dd id="info-model">—</dd></div>
+          <div><dt>韌體</dt><dd id="info-fw">—</dd></div>
+          <div><dt>區域</dt><dd id="info-region">—</dd></div>
+          <div><dt>更新時間</dt><dd id="info-updated">—</dd></div>
+        </dl>
+      </details>
+    </main>
+
+    <section id="empty" class="empty">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>載入中…</p>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
