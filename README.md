@@ -204,3 +204,12 @@ npm start
 - 冷氣模組回應較慢，服務有限流。
 - 網路關機不會觸發遙控器製黴循環。
 - 不要把埠直接映射到公網。
+
+## 參考與致謝
+
+本專案為獨立實作的 Web 控制台，**並非**上述 Homebridge 外掛的 fork，但本地通訊協定（`/dsiot/multireq` 讀寫、模式／溫度／風量欄位對應等）主要參考了：
+
+- [tasict/homebridge-daikin-local-platform](https://github.com/tasict/homebridge-daikin-local-platform)（Apache-2.0）— 裝置協定與欄位對照  
+- [やまでん：Daikin APP 的エアコンを Homebridge 経由で操作](https://ydn.jp/archives/12367) — 外掛作者亦引用的協定說明  
+
+若你需要 HomeKit / Homebridge 整合，請直接使用該外掛；本倉庫著重在手機瀏覽器與 Docker（例如 iStoreOS）部署。
